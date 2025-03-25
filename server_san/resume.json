@@ -1,0 +1,98 @@
+{
+    "name": "Keerthana Priya Devaraj",
+    "title": "AI Engineer",
+    "professional_summary": [
+      "Proficient in programming and software development, demonstrating strong coding skills and best practices.",
+      "Solid foundation in machine learning (ML) and deep learning (DL), applying algorithms to solve complex problems.",
+      "Adept at data engineering and preprocessing, ensuring data quality and readiness for model training.",
+      "Skilled in natural language processing (NLP), enabling machines to understand and process human language.",
+      "Experienced in computer vision, extracting insights and information from images and videos.",
+      "Proficient in AI model deployment and MLOps, managing the lifecycle of AI models from development to production.",
+      "Possesses strong communication skills, effectively conveying technical information to diverse audiences.",
+      "Demonstrates teamwork abilities, collaborating effectively within teams to achieve shared goals.",
+      "Holds accountability for deliverables and commitments, ensuring timely and quality outcomes.",
+      "Exhibits strategic thinking, aligning AI solutions with broader business objectives.",
+      "Demonstrates decision-making capabilities, making informed choices based on available data and insights.",
+      "Skilled in coaching and mentoring, guiding and supporting others in their professional development.",
+      "Maintains a customer-centric approach, prioritizing user needs and satisfaction."
+    ],
+    "certifications": [
+      "Professional Certificate in AI & Machine Learning",
+      "Artificial Intelligence Foundations"
+    ],
+    "education": {
+      "institution": "KLUniversity",
+      "location": "Coimbatore"
+    },
+    "skills": {
+      "technical": [
+        "Generative AI/LLMs",
+        "LangChain, Lama-Index",
+        "Python (FastAPI, Flask)",
+        "NLP (Text Handling)",
+        "Multi-Agent, Auto-Gen",
+        "AWS (S3, EC2, CodeCommit)",
+        "PostgreSQL"
+      ],
+      "analytical": [
+        "Data Analysis",
+        "Problem Solving",
+        "Critical Thinking"
+      ],
+      "soft": [
+        "Communication",
+        "Teamwork",
+        "Accountability",
+        "Strategic Thinking",
+        "Decision-Making",
+        "Coaching and Mentoring",
+        "Customer Focus"
+      ]
+    },
+    "projects": [
+      {
+        "name": "Interview Bot",
+        "description": "Developed an AI-powered interview bot using Python, LLMs, and NLP to streamline the recruitment process. The bot parses resumes, conducts aptitude and communication tests, and evaluates candidate responses, enhancing HR workflows and providing a personalized candidate experience.",
+        "role": "AI/ML Developer",
+        "technology": [
+          "Python",
+          "LangChain",
+          "LLMs",
+          "NLP (SpaCy)",
+          "Whisper",
+          "FastAPI",
+          "S3",
+          "EC2"
+        ],
+        "role_played": "Led the development of the HR interview bot, integrating various technologies and ensuring its accuracy and reliability."
+      },
+      {
+        "name": "Service BOT",
+        "description": "Developed a proof-of-concept (POC) service bot using LLMs and multi-agent systems to handle diverse tasks efficiently. The bot leverages NLP to interpret user requests and delegates them to specialized agents, optimizing service delivery and operational efficiency.",
+        "role": "AI/ML Developer",
+        "technology": [
+          "LangChain",
+          "OpenAI",
+          "Python",
+          "FastAPI",
+          "Streamlit",
+          "NLP"
+        ],
+        "role_played": "Led the development of the POC service bot, orchestrating complex AI systems and integrating cutting-edge technologies."
+      },
+      {
+        "name": "Assessment BOT",
+        "description": "Developed an assessment bot using T5 models and LLMs to dynamically generate multiple-choice, true/false, and descriptive questions. The bot leverages NLP to analyze content and formulate tailored questions, enhancing assessment workflows and providing valuable insights into learners' knowledge.",
+        "role": "AI/ML Developer",
+        "technology": [
+          "T5 models",
+          "LangChain",
+          "OpenAI",
+          "Python",
+          "FastAPI"
+        ],
+        "role_played": "Spearheaded the development of the assessment bot, fine-tuning algorithms and ensuring the quality and relevance of generated questions."
+      }
+    ]
+  }
+  

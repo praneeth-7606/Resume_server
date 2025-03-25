@@ -1,0 +1,394 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Automation Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .card {
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .card h2 {
+            margin-top: 0;
+            color: #3498db;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        label {
+            font-weight: bold;
+        }
+        input, button {
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        input[type="file"] {
+            border: none;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background-color: #f8f9fa;
+            border-left: 5px solid #28a745;
+            display: none;
+        }
+        #search-results {
+            margin-top: 15px;
+        }
+        .hidden {
+            display: none;
+        }
+        .file-info {
+            margin-top: 10px;
+            background-color: #e8f4fd;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .step {
+            background-color: #f1f1f1;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .step.active {
+            background-color: #3498db;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Resume Automation Tool</h1>
+    
+    <div class="container">
+        <div class="card">
+            <h2>1. Upload Skill Matrix</h2>
+            <form id="skill-matrix-form">
+                <label for="skill-matrix">Upload Excel Skill Matrix File:</label>
+                <input type="file" id="skill-matrix" accept=".xlsx,.xls" required>
+                <button type="submit">Upload Skill Matrix</button>
+            </form>
+            <div id="skill-matrix-info" class="file-info"></div>
+        </div>
+
+        <div class="card">
+            <h2>2. Upload Resume</h2>
+            <form id="resume-form">
+                <label for="resume">Upload Resume File (PDF, DOCX, TXT):</label>
+                <input type="file" id="resume" accept=".pdf,.docx,.txt" required>
+                <button type="submit">Upload Resume</button>
+            </form>
+            <div id="resume-info" class="file-info"></div>
+        </div>
+
+        <div class="card">
+            <h2>3. Upload Resume Template</h2>
+            <form id="template-form">
+                <label for="template">Upload Template File (PDF, DOCX, TXT):</label>
+                <input type="file" id="template" accept=".pdf,.docx,.txt" required>
+                <button type="submit">Upload Template</button>
+            </form>
+            <div id="template-info" class="file-info"></div>
+        </div>
+
+        <div class="card">
+            <h2>4. Search Employee in Skill Matrix</h2>
+            <form id="search-form">
+                <label for="first-name">First Name:</label>
+                <input type="text" id="first-name" required>
+                <label for="last-name">Last Name:</label>
+                <input type="text" id="last-name" required>
+                <button type="submit">Search</button>
+            </form>
+            <div id="search-results"></div>
+        </div>
+
+        <div class="card">
+            <h2>5. Generate Resume</h2>
+            <form id="generate-form">
+                <p>Using the files uploaded above and search results, generate a new resume.</p>
+                <button type="submit" id="generate-btn">Generate Resume</button>
+            </form>
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // Store file paths
+        const filePaths = {
+            skillMatrix: '',
+            resume: '',
+            template: ''
+        };
+        
+        let firstName = '';
+        let lastName = '';
+
+        // Skill Matrix Upload
+        document.getElementById('skill-matrix-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('skill-matrix');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/upload/skill-matrix', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    filePaths.skillMatrix = data.file_path;
+                    document.getElementById('skill-matrix-info').textContent = 
+                        `File uploaded: ${data.filename}. Processed ${data.sheets_processed} sheets with ${data.total_records} records.`;
+                    document.getElementById('skill-matrix-info').style.display = 'block';
+                } else {
+                    alert('Error: ' + data.detail);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to upload file');
+            }
+        });
+
+        // Resume Upload
+        document.getElementById('resume-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('resume');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/upload/resume', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    filePaths.resume = data.file_path;
+                    document.getElementById('resume-info').textContent = 
+                        `File uploaded: ${data.filename}. Text extracted successfully.`;
+                    document.getElementById('resume-info').style.display = 'block';
+                } else {
+                    alert('Error: ' + data.detail);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to upload file');
+            }
+        });
+
+        // Template Upload
+        document.getElementById('template-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('template');
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/upload/resume', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                if (response.ok) {
+                    filePaths.template = data.file_path;
+                    document.getElementById('template-info').textContent = 
+                        `File uploaded: ${data.filename}. Text extracted successfully.`;
+                    document.getElementById('template-info').style.display = 'block';
+                } else {
+                    alert('Error: ' + data.detail);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Failed to upload file');
+            }
+        });
+
+        // Search Form
+      // Search Form
+document.getElementById('search-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    firstName = document.getElementById('first-name').value;
+    lastName = document.getElementById('last-name').value;
+
+    if (!firstName || !lastName) {
+        alert('Please enter both first and last name');
+        return;
+    }
+
+    try {
+        const response = await fetch('/search/by-name', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                first_name: firstName,
+                last_name: lastName
+            })
+        });
+
+        const data = await response.json();
+        const resultsDiv = document.getElementById('search-results');
+        
+        if (data.length > 0) {
+            let html = '<h3>Search Results:</h3><ul>';
+            data.forEach(item => {
+                // Handle different possible column names
+                const id = item.ID || item.Id || "N/A";
+                const firstName = item.First_Name || item["First Name"] || "N/A";
+                const lastName = item.Last_Name || item["Last Name"] || "N/A";
+                const experience = item.Experience || "N/A";
+                const sheetName = item["Sheet Name"] || "Unknown";
+                
+                html += `<li>ID: ${id}, Name: ${firstName} ${lastName}, 
+                        Experience: ${experience}, 
+                        Sheet: ${sheetName}</li>`;
+            });
+            html += '</ul>';
+            resultsDiv.innerHTML = html;
+        } else {
+            resultsDiv.innerHTML = '<p>No results found. Please check the name and try again.</p>';
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to search');
+    }
+});
+
+        // Generate Resume
+        // Generate Resume
+document.getElementById('generate-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Show loading state
+    const generateBtn = document.getElementById('generate-btn');
+    const originalBtnText = generateBtn.textContent;
+    generateBtn.textContent = 'Generating...';
+    generateBtn.disabled = true;
+    
+    // Check if all required files are uploaded
+    if (!filePaths.resume || !filePaths.template) {
+        alert('Please upload resume and template files first');
+        generateBtn.textContent = originalBtnText;
+        generateBtn.disabled = false;
+        return;
+    }
+
+    const resultDiv = document.getElementById('result');
+    resultDiv.innerHTML = '<p>Processing your request... This may take up to 1 minute.</p>';
+    resultDiv.style.display = 'block';
+
+    try {
+        const response = await fetch('/generate/resume', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                old_resume_path: filePaths.resume,
+                template_path: filePaths.template,
+                skill_matrix_path: filePaths.skillMatrix || null,
+                first_name: firstName || null,
+                last_name: lastName || null
+            })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+            resultDiv.innerHTML = `
+                <h3>Resume Generation Complete!</h3>
+                <p>${data.message}</p>
+                <p>Download files:</p>
+                <ul>
+                    <li><a href="/download/${data.resume_path.split('/').pop()}" target="_blank">Download Resume</a></li>
+                    <li>Cover Letter: ${data.cover_letter_status}</li>
+                </ul>
+                <p>Check the Output directory for your files.</p>
+            `;
+        } else {
+            resultDiv.innerHTML = `
+                <h3>Error Generating Resume</h3>
+                <p>Error: ${data.detail || 'Unknown error occurred'}</p>
+                <p>Please try again or check the following:</p>
+                <ul>
+                    <li>Make sure your resume and template files are valid</li>
+                    <li>Verify that the skill matrix contains the searched name</li>
+                    <li>Try with different input files if the problem persists</li>
+                </ul>
+            `;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        resultDiv.innerHTML = `
+            <h3>Request Failed</h3>
+            <p>There was a problem communicating with the server. Please try again later.</p>
+            <p>Error details: ${error.message || 'Unknown error'}</p>
+        `;
+    } finally {
+        // Restore button state
+        generateBtn.textContent = originalBtnText;
+        generateBtn.disabled = false;
+    }
+});
+    </script>
+</body>
+</html>
+    

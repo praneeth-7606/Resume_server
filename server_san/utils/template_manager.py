@@ -304,7 +304,8 @@ RESUME_TEMPLATES = {
     1: generate_resume_1,  # Default/Original template
     2: generate_resume_2,  # Professional template
     3: generate_resume_3,  # Creative Resume template (your provided code)
-    4: generate_resume_4,  # Creative Portfolio template
+    4: generate_resume_4,
+        # Creative Portfolio template
     # Add more templates here when available
 }
 

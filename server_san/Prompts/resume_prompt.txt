@@ -1,0 +1,12 @@
+
+Create a professional resume for {name} based on the following information:
+
+Skills: {skills}
+Experience: {experience}
+Education: {education}
+Certifications: {certifications}
+
+Target job: {job_title}
+Target company: {company_name}
+
+Please format the resume to be ATS-friendly and highlight the most relevant skills and experiences for the target job.

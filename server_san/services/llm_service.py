@@ -109,12 +109,13 @@ def LLM_CALL_2(formatted_json_schema: Dict, old_resume_text: str, skill_matrix_j
                 - Follow the JSON structure exactly as provided.
                 - Ensure the output starts directly with a valid JSON object (no extra text or explanations).
                 - Try to keep the project description within 40-50 words.
-
+                - If there are any keys having empoty values pl skip the resoective keys in output.
                 Generate the updated resume in JSON format:
                 name and designation mandatory key value pairs and create a proper summarized objective a key  in for any kind of templete.
                 make sure it follows the given format of formatted_json_schema wiht same json format with key value pairs. 
-                Points to note : Only In the key "Education" form a sentance and use that instead of having multiple sub sections (Make sure give education as a list inside key education). Do not make up values , if you have no access to a value, don't make it up.
-                Keep the names of The keyvalues in the json schema same. Skills also give as per the json schema.
+                Points to note : In the key "Education" form a sentance and give in points make a list and use that. Do not make up values , if you have no access to a value, don't make it up.
+                Keep the names of the keyvalues in the json schema same. Skills also give as per the json schema.
+                
 
                 Make sure to keep the same key names as in the json schema for rest attributes.
 
@@ -509,6 +510,7 @@ def LLM_CALL_5(formatted_json_schema, old_resume_text):
             make sure it follows the given format of formatted_json_schema wiht same json format with key value pairs. 
             Points to note : In the key "Education" form a sentance and give in points make a list and use that. Do not make up values , if you have no access to a value, don't make it up.
             Keep the names of the keyvalues in the json schema same. Skills also give as per the json schema.
+            
 
             Make sure to keep the same key names as in the json schema for rest attributes.
 

@@ -106,47 +106,43 @@ class PDF(FPDF):
             pass  # Skip if logo is not found
         self.set_font("Arial", "B", 12)
         self.ln(10)
-        
+
     def chapter_title(self, title):
         self.set_text_color(0, 0, 180)
         self.set_font("Arial", "B", 11)
         self.cell(0, 8, self.clean_text(title), ln=True, align="L")
         self.ln(4)
         self.set_text_color(0, 0, 0)
-            
+
     def add_project_table(self, project):
         """Creates a vertical-style project details table."""
-        col_widths = [60, 120]  # Adjusted column width for better text fitting
+        col_widths = [50, 120]
         row_height = 8
 
-        self.set_font("Arial", "B", 10)
-        # Use either name or project_name field
-        project_name = project.get('name', project.get('project_name', 'N/A'))
-        self.cell(0, 6, f"{self.clean_text(project_name)}", ln=True)
-        self.ln(3)
+        self.set_font("Arial", "B", 9)
+        self.cell(0, 6, f"<{self.clean_text(project.get('name', 'N/A'))}>", ln=True)
+        self.ln(2)
         self.set_font("Arial", "", 9)
 
         def add_row(label, text):
             if text:
                 text = self.clean_text(text)
                 text_height = (self.get_string_width(text) // col_widths[1] + 1) * row_height
-                self.cell(col_widths[0], row_height, label, border=1, align="C")
+                self.cell(col_widths[0], text_height, label, border=1, align="C")
                 self.multi_cell(col_widths[1], row_height, text, border=1)
-                self.ln(0)  # Ensure proper spacing
 
-        # Create fields mapping that can handle both naming conventions
         fields = [
-            ("Project Name", project.get("name", project.get("project_name", "N/A"))),
-            ("Description", project.get("description", "N/A")),
-            ("Role", project.get("role", "N/A")),
-            ("Technology", project.get("technology", "N/A")),
-            ("Role Played", project.get("role_played", "N/A")),
+            ("Project Name", project.get("name", "")),
+            ("Role", project.get("role", "")),
+            ("Description", project.get("description", "")),
+            ("Technology", project.get("technology", "")),
+            ("Role Played", project.get("role_played", "")),
         ]
 
         for label, text in fields:
             add_row(label, text)
 
-        self.ln(5)  # Extra space after each project table
+        self.ln()
 
     def cell(self, w, h=0, txt='', border=0, ln=0, align='', fill=False, link=''):
         txt = self.clean_text(txt)
@@ -157,12 +153,24 @@ class PDF(FPDF):
         super().multi_cell(w, h, txt, border, align, fill)
 
     def clean_text(self, text):
+        """Safe cleaning of text for PDF generation"""
         if not isinstance(text, str):
             text = str(text)
-        text = re.sub(r"[""]", '"', text)
-        text = re.sub(r"['']", "'", text)
-        return text.encode("latin-1", "replace").decode("latin-1")
-
+        try:
+            # Replace curly quotes with straight quotes
+            text = text.replace('"', '"').replace('"', '"')
+            text = text.replace(''', "'").replace(''', "'")
+            
+            # Remove control characters
+            text = ''.join(ch for ch in text if ord(ch) >= 32 or ch in '\n\r\t')
+            
+            # Handle encoding
+            return text.encode('latin-1', 'replace').decode('latin-1')
+        except Exception as e:
+            # If any errors, do a more aggressive cleanup
+            print(f"Error cleaning text: {str(e)}")
+            text = ''.join(ch for ch in text if ord(ch) < 128)  # ASCII only
+            return text
 
 def generate_resume_1(data_json: str) -> str:
     """Generates the resume PDF with precise formatting."""
@@ -171,21 +179,25 @@ def generate_resume_1(data_json: str) -> str:
         if isinstance(data_json, str):
             try:
                 data = json.loads(data_json)
-            except json.JSONDecodeError:
-                # If JSON parsing fails, create minimal data
+            except json.JSONDecodeError as e:
+                print(f"Error parsing JSON: {str(e)}")
+                # Create minimal valid data
                 data = {
                     "name": "Candidate",
                     "designation": "Professional",
-                    "summarized_objective": "Resume data could not be parsed correctly."
+                    "objective": "Resume generation encountered an error.",
+                    "education": [],
+                    "skills": [],
+                    "project_details": {}
                 }
         else:
             data = data_json
-
+        
         # Ensure data has all required keys
         required_keys = ["name", "designation", "education", "skills", "project_details"]
         for key in required_keys:
             if key not in data:
-                data[key] = [] if key in ["education", "skills", "project_details"] else {}
+                data[key] = [] if key in ["education", "skills"] else {}
                 if key in ["name", "designation"]:
                     data[key] = "Not Provided"
         
@@ -194,64 +206,63 @@ def generate_resume_1(data_json: str) -> str:
         pdf.add_page()
         pdf.logo_path = config.LOGO_PATH  # Always use the config logo path
 
-        if "name" in data and data["name"]:
-            pdf.set_font("Arial", "B", 16)
-            pdf.cell(0, 8, pdf.clean_text(data["name"]), ln=True, align="L")
+        # Name
+        pdf.set_font("Arial", "B", 16)
+        pdf.cell(0, 8, pdf.clean_text(data["name"]), ln=True, align="L")
         
-        if "designation" in data and data["designation"]:
-            pdf.set_font("Arial", "I", 12)
-            pdf.cell(0, 8, pdf.clean_text(data["designation"]), ln=True, align="L")
+        # Designation
+        pdf.set_font("Arial", "I", 12)
+        pdf.cell(0, 8, pdf.clean_text(data["designation"]), ln=True, align="L")
         
+        # Divider line
         pdf.set_line_width(0.5)
         pdf.line(15, pdf.get_y(), 195, pdf.get_y())
         pdf.ln(8)
         
-        if "summarized_objective" in data and data["summarized_objective"]:
+        # Objective/Summary
+        summary_field = next((data[k] for k in ["summarized_objective", "objective"] if k in data and data[k]), "")
+        if summary_field:
             pdf.chapter_title("PROFESSIONAL SUMMARY")
             pdf.set_font("Arial", "", 9)
-            pdf.multi_cell(0, 7, pdf.clean_text(data["summarized_objective"]))
+            pdf.multi_cell(0, 7, pdf.clean_text(summary_field))
             pdf.ln(5)
         
-        if "education" in data and data["education"]:
+        # Education
+        if data["education"]:
             pdf.chapter_title("EDUCATION")
             pdf.set_font("Arial", "", 9)
-            pdf.multi_cell(0, 6, pdf.clean_text("".join(data["education"])))
+            edu_text = data["education"]
+            if isinstance(edu_text, list):
+                edu_text = "".join(edu_text)
+            pdf.multi_cell(0, 6, pdf.clean_text(edu_text))
             pdf.ln(5)
         
-        if "skills" in data and data["skills"]:
+        # Skills
+        if data["skills"]:
             pdf.chapter_title("SKILLS")
             pdf.set_font("Arial", "", 9)
-            pdf.multi_cell(0, 6, pdf.clean_text(", ".join(data["skills"])))
+            skills_text = data["skills"]
+            if isinstance(skills_text, list):
+                skills_text = ", ".join(skills_text)
+            pdf.multi_cell(0, 6, pdf.clean_text(skills_text))
             pdf.ln(8)
         
-        # Modified project_details handling to work with both list and dict formats
-        if "project_details" in data:
+        # Project details
+        if data["project_details"]:
             pdf.chapter_title("PROJECT DETAILS")
-            
-            # Handle projects whether they're in a list or dictionary
-            projects = []
-            if isinstance(data["project_details"], dict):
-                projects = data["project_details"].values()
-            elif isinstance(data["project_details"], list):
+
+            # Handle both list of dictionaries and dictionary of dictionaries
+            if isinstance(data["project_details"], list):
                 projects = data["project_details"]
-                
+            elif isinstance(data["project_details"], dict):
+                projects = data["project_details"].values()  # Extract values from dict
+            else:
+                projects = []
+
             for project in projects:
-                if isinstance(project, dict) and project:
-                    # Map field names if needed (project_name → name)
-                    project_data = {}
-                    if "project_name" in project and "name" not in project:
-                        project_data["name"] = project["project_name"]
-                    else:
-                        project_data["name"] = project.get("name", "N/A")
-                        
-                    # Copy other fields directly
-                    project_data["description"] = project.get("description", "N/A")
-                    project_data["role"] = project.get("role", "N/A") 
-                    project_data["technology"] = project.get("technology", "N/A")
-                    project_data["role_played"] = project.get("role_played", "N/A")
-                    
-                    pdf.add_project_table(project_data)
-        
+                if isinstance(project, dict):  # Ensure each item is a dictionary
+                    pdf.add_project_table(project)
+
         # Use a sanitized name for the output filename
         safe_name = pdf.clean_text(data.get('name', 'Resume')).replace(' ', '_')
         safe_name = ''.join(c for c in safe_name if c.isalnum() or c in '._- ')
@@ -280,7 +291,6 @@ def generate_resume_1(data_json: str) -> str:
         except:
             # If even the error PDF fails, return a path that doesn't exist (will be caught in calling code)
             return os.path.join(config.OUTPUT_DIR, "resume_generation_failed.pdf")
-
 def generate_cover_letter_pdf(cover_letter_text: str, candidate_name: str) -> str:
     """Generates a PDF file from the cover letter text."""
     try:

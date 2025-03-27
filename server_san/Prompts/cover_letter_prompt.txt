@@ -1,0 +1,9 @@
+
+Create a professional cover letter for {name} applying for the {job_title} position at {company_name}.
+
+Include the following information:
+- Skills: {skills}
+- Experience: {experience}
+- Why the candidate is a good fit for the position: {fit_reasons}
+
+Make the letter engaging, professional, and tailored to the specific company and position.

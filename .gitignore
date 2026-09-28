@@ -1,0 +1,8 @@
+# OpenCode agent local files (never commit)
+.opencode/
+opencode.json
+.opencode-cache/
+
+# gitflow local folders (never commit)
+gitflow/
+.gitflow/
